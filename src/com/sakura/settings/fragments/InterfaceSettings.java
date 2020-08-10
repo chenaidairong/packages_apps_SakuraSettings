@@ -45,6 +45,7 @@ import android.os.UserHandle;
 import com.android.internal.util.sakura.ThemesUtils;
 import com.android.internal.util.sakura.Utils;
 import com.sakura.settings.fragments.misc.HAFRSettings;
+import com.sakura.settings.fragments.CutoutSettings;
 import static android.os.UserHandle.USER_SYSTEM;
 import android.app.UiModeManager;
 
@@ -61,8 +62,10 @@ public class InterfaceSettings extends SettingsPreferenceFragment implements
     private ListPreference mThemeSwitch;
 
     private static final String SMART_PIXELS = "smart_pixels";
-
     private Preference mSmartPixels;
+
+    private static final String DISPLAY_CUTOUT = "cutout_settings";
+    private Preference mDisplayCutout;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -71,10 +74,17 @@ public class InterfaceSettings extends SettingsPreferenceFragment implements
         ContentResolver resolver = getActivity().getContentResolver();
         final PreferenceScreen prefScreen = getPreferenceScreen();
 
-    mUiModeManager = getContext().getSystemService(UiModeManager.class);
-    mOverlayService = IOverlayManager.Stub
+
+        final boolean hasNotch = res.getBoolean(
+                org.lineageos.platform.internal.R.bool.config_haveNotch);
+
+        mDisplayCutout = (Preference) prefScreen.findPreference(DISPLAY_CUTOUT);
+        if (!hasNotch)
+            prefScreen.removePreference(mDisplayCutout);
+        mUiModeManager = getContext().getSystemService(UiModeManager.class);
+        mOverlayService = IOverlayManager.Stub
                 .asInterface(ServiceManager.getService(Context.OVERLAY_SERVICE));
-	setupThemeSwitchPref();
+            setupThemeSwitchPref();
     }
 
     private void setupThemeSwitchPref() {
@@ -119,6 +129,11 @@ public class InterfaceSettings extends SettingsPreferenceFragment implements
         return MetricsProto.MetricsEvent.SAKURA;
     }
 
+    public static void reset(Context mContext) {
+         ContentResolver resolver = mContext.getContentResolver();
+         CutoutSettings.reset(mContext);
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -140,7 +155,7 @@ public class InterfaceSettings extends SettingsPreferenceFragment implements
                     handleBackgrounds(false, context, UiModeManager.MODE_NIGHT_NO, ThemesUtils.CHOCO_X);
                     handleBackgrounds(false, context, UiModeManager.MODE_NIGHT_NO, ThemesUtils.PITCH_BLACK);
                     handleBackgrounds(false, context, UiModeManager.MODE_NIGHT_NO, ThemesUtils.MATERIAL_OCEAN);
-                    handleBackgrounds(false, context, UiModeManager.MODE_NIGHT_YES, ThemesUtils.MIZU_THEMES);
+                    handleBackgrounds(false, context, UiModeManager.MODE_NIGHT_NO, ThemesUtils.MIZU_THEMES);
                     break;
                 case "2":
                     handleBackgrounds(false, context, UiModeManager.MODE_NIGHT_YES, ThemesUtils.SOLARIZED_DARK);
